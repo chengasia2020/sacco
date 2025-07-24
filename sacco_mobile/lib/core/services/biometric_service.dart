@@ -1,1 +1,339 @@
-import 'package:injectable/injectable.dart';\nimport 'package:local_auth/local_auth.dart';\nimport 'package:logger/logger.dart';\n\nimport '../storage/secure_storage_service.dart';\nimport '../constants/storage_keys.dart';\nimport '../errors/app_error.dart';\n\n@lazySingleton\nclass BiometricService {\n  final LocalAuthentication _localAuth;\n  final SecureStorageService _secureStorage;\n  final Logger _logger;\n\n  BiometricService(\n    this._localAuth,\n    this._secureStorage,\n    this._logger,\n  );\n\n  /// Check if biometric authentication is available on the device\n  Future<bool> isBiometricAvailable() async {\n    try {\n      final isAvailable = await _localAuth.canCheckBiometrics;\n      final isDeviceSupported = await _localAuth.isDeviceSupported();\n      return isAvailable && isDeviceSupported;\n    } catch (e) {\n      _logger.e('Error checking biometric availability: $e');\n      return false;\n    }\n  }\n\n  /// Get list of available biometric types\n  Future<List<BiometricType>> getAvailableBiometrics() async {\n    try {\n      return await _localAuth.getAvailableBiometrics();\n    } catch (e) {\n      _logger.e('Error getting available biometrics: $e');\n      return [];\n    }\n  }\n\n  /// Check if biometric authentication is enabled by user\n  Future<bool> isBiometricEnabled() async {\n    try {\n      final enabled = await _secureStorage.read(StorageKeys.biometricEnabled);\n      return enabled == 'true';\n    } catch (e) {\n      _logger.e('Error checking biometric enabled status: $e');\n      return false;\n    }\n  }\n\n  /// Enable biometric authentication\n  Future<void> enableBiometric() async {\n    try {\n      // First verify that biometric is available\n      final isAvailable = await isBiometricAvailable();\n      if (!isAvailable) {\n        throw const AppError.biometricNotAvailable();\n      }\n\n      // Test biometric authentication\n      final authenticated = await authenticateWithBiometric(\n        reason: 'Enable biometric authentication for secure login',\n      );\n\n      if (authenticated) {\n        await _secureStorage.write(StorageKeys.biometricEnabled, 'true');\n        _logger.i('Biometric authentication enabled successfully');\n      } else {\n        throw const AppError.biometricAuthenticationFailed();\n      }\n    } catch (e) {\n      _logger.e('Error enabling biometric: $e');\n      rethrow;\n    }\n  }\n\n  /// Disable biometric authentication\n  Future<void> disableBiometric() async {\n    try {\n      await _secureStorage.delete(StorageKeys.biometricEnabled);\n      _logger.i('Biometric authentication disabled');\n    } catch (e) {\n      _logger.e('Error disabling biometric: $e');\n      rethrow;\n    }\n  }\n\n  /// Authenticate using biometric\n  Future<bool> authenticateWithBiometric({\n    required String reason,\n    bool stickyAuth = true,\n    bool biometricOnly = false,\n  }) async {\n    try {\n      // Check if biometric is available and enabled\n      final isAvailable = await isBiometricAvailable();\n      final isEnabled = await isBiometricEnabled();\n\n      if (!isAvailable) {\n        throw const AppError.biometricNotAvailable();\n      }\n\n      if (!isEnabled) {\n        throw const AppError.biometricNotEnabled();\n      }\n\n      // Perform biometric authentication\n      final authenticated = await _localAuth.authenticate(\n        localizedReason: reason,\n        options: AuthenticationOptions(\n          stickyAuth: stickyAuth,\n          biometricOnly: biometricOnly,\n        ),\n      );\n\n      if (authenticated) {\n        _logger.i('Biometric authentication successful');\n        return true;\n      } else {\n        _logger.w('Biometric authentication failed or cancelled');\n        return false;\n      }\n    } catch (e) {\n      _logger.e('Error during biometric authentication: $e');\n      \n      // Handle specific error types\n      if (e.toString().contains('NotAvailable')) {\n        throw const AppError.biometricNotAvailable();\n      } else if (e.toString().contains('NotEnrolled')) {\n        throw const AppError.biometricNotEnrolled();\n      } else if (e.toString().contains('LockedOut')) {\n        throw const AppError.biometricLockedOut();\n      } else {\n        throw AppError.biometricAuthenticationFailed(message: e.toString());\n      }\n    }\n  }\n\n  /// Get biometric type string for display\n  String getBiometricDisplayName(BiometricType type) {\n    switch (type) {\n      case BiometricType.face:\n        return 'Face Recognition';\n      case BiometricType.fingerprint:\n        return 'Fingerprint';\n      case BiometricType.iris:\n        return 'Iris Recognition';\n      case BiometricType.weak:\n        return 'Weak Biometric';\n      case BiometricType.strong:\n        return 'Strong Biometric';\n    }\n  }\n\n  /// Get appropriate icon for biometric type\n  String getBiometricIcon(BiometricType type) {\n    switch (type) {\n      case BiometricType.face:\n        return 'face_recognition';\n      case BiometricType.fingerprint:\n        return 'fingerprint';\n      case BiometricType.iris:\n        return 'iris_recognition';\n      case BiometricType.weak:\n      case BiometricType.strong:\n        return 'security';\n    }\n  }\n\n  /// Check if user should be prompted to enable biometric\n  Future<bool> shouldPromptBiometricSetup() async {\n    try {\n      final isAvailable = await isBiometricAvailable();\n      final isEnabled = await isBiometricEnabled();\n      final hasBeenPrompted = await _secureStorage.read(StorageKeys.biometricPrompted) == 'true';\n      \n      return isAvailable && !isEnabled && !hasBeenPrompted;\n    } catch (e) {\n      _logger.e('Error checking biometric setup prompt: $e');\n      return false;\n    }\n  }\n\n  /// Mark that user has been prompted about biometric setup\n  Future<void> markBiometricPrompted() async {\n    try {\n      await _secureStorage.write(StorageKeys.biometricPrompted, 'true');\n    } catch (e) {\n      _logger.e('Error marking biometric prompted: $e');\n    }\n  }\n\n  /// Clear all biometric data (e.g., on logout)\n  Future<void> clearBiometricData() async {\n    try {\n      await _secureStorage.delete(StorageKeys.biometricEnabled);\n      await _secureStorage.delete(StorageKeys.biometricPrompted);\n      _logger.i('Biometric data cleared');\n    } catch (e) {\n      _logger.e('Error clearing biometric data: $e');\n    }\n  }\n}
+// lib/core/services/biometric_service.dart
+import 'dart:io';
+import 'package:flutter/services.dart';
+import 'package:local_auth/local_auth.dart';
+import 'package:local_auth_android/local_auth_android.dart';
+import 'package:local_auth_darwin/local_auth_darwin.dart';
+
+import '../storage/secure_storage_service.dart';
+import '../errors/app_error.dart';
+
+enum BiometricType {
+  fingerprint,
+  face,
+  voice,
+  none,
+}
+
+enum BiometricStatus {
+  unknown,
+  available,
+  notAvailable,
+  notEnrolled,
+  disabled,
+}
+
+class BiometricAuthResult {
+  final bool isSuccess;
+  final String? errorMessage;
+  final BiometricType? usedBiometric;
+
+  const BiometricAuthResult({
+    required this.isSuccess,
+    this.errorMessage,
+    this.usedBiometric,
+  });
+}
+
+class BiometricService {
+  final LocalAuthentication _localAuth;
+  final SecureStorageService _secureStorage;
+
+  static const String _biometricEnabledKey = 'biometric_enabled';
+  static const String _biometricTypeKey = 'biometric_type';
+  static const String _fallbackPinKey = 'fallback_pin';
+
+  BiometricService(this._localAuth, this._secureStorage);
+
+  /// Check if biometric authentication is available on the device
+  Future<BiometricStatus> getBiometricStatus() async {
+    try {
+      // Check if device supports biometric authentication
+      final bool isAvailable = await _localAuth.isDeviceSupported();
+      if (!isAvailable) {
+        return BiometricStatus.notAvailable;
+      }
+
+      // Check if biometric authentication can be used
+      final bool canCheckBiometrics = await _localAuth.canCheckBiometrics;
+      if (!canCheckBiometrics) {
+        return BiometricStatus.disabled;
+      }
+
+      // Check if biometrics are enrolled
+      final List<BiometricType> availableBiometrics = await getAvailableBiometrics();
+      if (availableBiometrics.isEmpty) {
+        return BiometricStatus.notEnrolled;
+      }
+
+      return BiometricStatus.available;
+    } catch (e) {
+      return BiometricStatus.unknown;
+    }
+  }
+
+  /// Get list of available biometric types
+  Future<List<BiometricType>> getAvailableBiometrics() async {
+    try {
+      final List<BiometricType> biometricTypes = [];
+      final List<BiometricType> availableBiometrics = await _localAuth.getAvailableBiometrics();
+
+      for (final biometric in availableBiometrics) {
+        switch (biometric) {
+          case BiometricType.fingerprint:
+            biometricTypes.add(BiometricType.fingerprint);
+            break;
+          case BiometricType.face:
+            biometricTypes.add(BiometricType.face);
+            break;
+          case BiometricType.voice:
+            biometricTypes.add(BiometricType.voice);
+            break;
+          default:
+            continue;
+        }
+      }
+
+      return biometricTypes;
+    } catch (e) {
+      return [];
+    }
+  }
+
+  /// Authenticate using biometrics
+  Future<BiometricAuthResult> authenticate({
+    String reason = 'Please authenticate to access your account',
+    bool useErrorDialogs = true,
+    bool stickyAuth = true,
+  }) async {
+    try {
+      // Check if biometric is enabled for the user
+      final bool isBiometricEnabled = await isBiometricEnabled();
+      if (!isBiometricEnabled) {
+        return const BiometricAuthResult(
+          isSuccess: false,
+          errorMessage: 'Biometric authentication is not enabled',
+        );
+      }
+
+      // Perform biometric authentication
+      final bool isAuthenticated = await _localAuth.authenticate(
+        localizedFallbackTitle: 'Use PIN',
+        authMessages: [
+          AndroidAuthMessages(
+            signInTitle: 'SACCO Mobile Authentication',
+            biometricHint: 'Verify your identity',
+            cancelButton: 'Cancel',
+            deviceCredentialsRequiredTitle: 'Device credentials required',
+            deviceCredentialsSetupDescription: 'Please set up device credentials',
+            goToSettingsButton: 'Go to Settings',
+            goToSettingsDescription: 'Set up biometric authentication in Settings',
+          ),
+          IOSAuthMessages(
+            cancelButton: 'Cancel',
+            goToSettingsButton: 'Go to Settings',
+            goToSettingsDescription: 'Set up biometric authentication in Settings',
+            lockOut: 'Biometric authentication is locked out',
+          ),
+        ],
+        options: AuthenticationOptions(
+          useErrorDialogs: useErrorDialogs,
+          stickyAuth: stickyAuth,
+          biometricOnly: false,
+        ),
+      );
+
+      if (isAuthenticated) {
+        final BiometricType? usedBiometric = await _getUsedBiometric();
+        return BiometricAuthResult(
+          isSuccess: true,
+          usedBiometric: usedBiometric,
+        );
+      } else {
+        return const BiometricAuthResult(
+          isSuccess: false,
+          errorMessage: 'Authentication failed or was cancelled',
+        );
+      }
+    } on PlatformException catch (e) {
+      String errorMessage = 'Biometric authentication failed';
+      
+      switch (e.code) {
+        case 'NotAvailable':
+          errorMessage = 'Biometric authentication is not available';
+          break;
+        case 'NotEnrolled':
+          errorMessage = 'No biometric credentials are enrolled';
+          break;
+        case 'LockedOut':
+          errorMessage = 'Too many failed attempts. Try again later';
+          break;
+        case 'PermanentlyLockedOut':
+          errorMessage = 'Biometric authentication is permanently locked';
+          break;
+        case 'BiometricOnlyNotSupported':
+          errorMessage = 'Device PIN is required as fallback';
+          break;
+        default:
+          errorMessage = e.message ?? 'Unknown biometric error';
+      }
+
+      return BiometricAuthResult(
+        isSuccess: false,
+        errorMessage: errorMessage,
+      );
+    } catch (e) {
+      return BiometricAuthResult(
+        isSuccess: false,
+        errorMessage: 'An unexpected error occurred: ${e.toString()}',
+      );
+    }
+  }
+
+  /// Enable biometric authentication for the user
+  Future<bool> enableBiometric(BiometricType biometricType) async {
+    try {
+      // First verify that the user can authenticate
+      final result = await authenticate(
+        reason: 'Authenticate to enable biometric login',
+      );
+
+      if (!result.isSuccess) {
+        throw AppError(
+          message: 'Failed to verify biometric authentication',
+          userFriendlyMessage: result.errorMessage ?? 'Authentication failed',
+        );
+      }
+
+      // Store biometric preferences
+      await _secureStorage.write(_biometricEnabledKey, 'true');
+      await _secureStorage.write(_biometricTypeKey, biometricType.toString());
+
+      return true;
+    } catch (e) {
+      throw AppError(
+        message: 'Failed to enable biometric authentication: ${e.toString()}',
+        userFriendlyMessage: 'Failed to enable biometric authentication',
+      );
+    }
+  }
+
+  /// Disable biometric authentication
+  Future<void> disableBiometric() async {
+    try {
+      await _secureStorage.delete(_biometricEnabledKey);
+      await _secureStorage.delete(_biometricTypeKey);
+    } catch (e) {
+      throw AppError(
+        message: 'Failed to disable biometric authentication: ${e.toString()}',
+        userFriendlyMessage: 'Failed to disable biometric authentication',
+      );
+    }
+  }
+
+  /// Check if biometric is enabled for the user
+  Future<bool> isBiometricEnabled() async {
+    try {
+      final String? enabled = await _secureStorage.read(_biometricEnabledKey);
+      return enabled == 'true';
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Get the enabled biometric type
+  Future<BiometricType?> getEnabledBiometricType() async {
+    try {
+      final String? typeString = await _secureStorage.read(_biometricTypeKey);
+      if (typeString == null) return null;
+
+      switch (typeString) {
+        case 'BiometricType.fingerprint':
+          return BiometricType.fingerprint;
+        case 'BiometricType.face':
+          return BiometricType.face;
+        case 'BiometricType.voice':
+          return BiometricType.voice;
+        default:
+          return null;
+      }
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Set up fallback PIN for biometric authentication
+  Future<void> setFallbackPin(String pin) async {
+    try {
+      // In a real app, you'd want to hash this PIN
+      await _secureStorage.write(_fallbackPinKey, pin);
+    } catch (e) {
+      throw AppError(
+        message: 'Failed to set fallback PIN: ${e.toString()}',
+        userFriendlyMessage: 'Failed to set fallback PIN',
+      );
+    }
+  }
+
+  /// Verify fallback PIN
+  Future<bool> verifyFallbackPin(String pin) async {
+    try {
+      final String? storedPin = await _secureStorage.read(_fallbackPinKey);
+      return storedPin == pin;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Check if fallback PIN is set
+  Future<bool> hasFallbackPin() async {
+    try {
+      final String? pin = await _secureStorage.read(_fallbackPinKey);
+      return pin != null && pin.isNotEmpty;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Get the biometric type that was used for authentication
+  Future<BiometricType?> _getUsedBiometric() async {
+    // This is a simplified implementation
+    // In practice, you might need to track which biometric was actually used
+    final List<BiometricType> available = await getAvailableBiometrics();
+    final BiometricType? enabled = await getEnabledBiometricType();
+    
+    if (enabled != null && available.contains(enabled)) {
+      return enabled;
+    }
+    
+    return available.isNotEmpty ? available.first : null;
+  }
+
+  /// Reset all biometric settings
+  Future<void> resetBiometricSettings() async {
+    try {
+      await _secureStorage.delete(_biometricEnabledKey);
+      await _secureStorage.delete(_biometricTypeKey);
+      await _secureStorage.delete(_fallbackPinKey);
+    } catch (e) {
+      throw AppError(
+        message: 'Failed to reset biometric settings: ${e.toString()}',
+        userFriendlyMessage: 'Failed to reset biometric settings',
+      );
+    }
+  }
+
+  /// Get human-readable name for biometric type
+  String getBiometricTypeName(BiometricType type) {
+    switch (type) {
+      case BiometricType.fingerprint:
+        return 'Fingerprint';
+      case BiometricType.face:
+        return Platform.isIOS ? 'Face ID' : 'Face Recognition';
+      case BiometricType.voice:
+        return 'Voice Recognition';
+      case BiometricType.none:
+        return 'None';
+    }
+  }
+}
