@@ -64,7 +64,7 @@ class LoanViewsTest(APITestCase):
         )
 
     def test_create_loan(self):
-        url = reverse('loans-list')
+        url = reverse('loan-list')
         data = {
             'member': self.member.id,
             'reference': 'LN2024TEST002',
@@ -82,20 +82,20 @@ class LoanViewsTest(APITestCase):
         self.assertEqual(Loan.objects.get(reference='LN2024TEST002').loan_type, 'BUSINESS')
 
     def test_get_loan_list(self):
-        url = reverse('loans-list')
+        url = reverse('loan-list')
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # Count should be 1 (the loan created in setUp)
         self.assertEqual(len(response.data['results']), 1)
 
     def test_get_loan_detail(self):
-        url = reverse('loans-detail', args=[self.loan.id])
+        url = reverse('loan-detail', args=[self.loan.id])
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['reference'], 'LN2024TEST001')
 
     def test_approve_loan(self):
-        url = reverse('loans-approve', args=[self.loan.id])
+        url = reverse('loan-approve', args=[self.loan.id])
         response = self.client.post(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -104,18 +104,18 @@ class LoanViewsTest(APITestCase):
         self.assertEqual(self.loan.status, 'APPROVED')
 
     def test_cannot_disburse_pending_loan(self):
-        url = reverse('loans-disburse', args=[self.loan.id])
+        url = reverse('loan-disburse', args=[self.loan.id])
         response = self.client.post(url)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('Only approved loans can be disbursed', str(response.data))
 
     def test_disburse_approved_loan(self):
         # First approve the loan
-        approve_url = reverse('loans-approve', args=[self.loan.id])
+        approve_url = reverse('loan-approve', args=[self.loan.id])
         self.client.post(approve_url)
 
         # Then disburse it
-        disburse_url = reverse('loans-disburse', args=[self.loan.id])
+        disburse_url = reverse('loan-disburse', args=[self.loan.id])
         response = self.client.post(disburse_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
