@@ -3,7 +3,7 @@ class AppConstants {
   AppConstants._();
   
   // API base URL - update with your actual API endpoint
-  static const String apiBaseUrl = 'http://192.168.1.3:8000/api/v1';
+  static const String apiBaseUrl = 'http://localhost:8000/api/v1';
   
   // Authentication endpoints
   static const String loginEndpoint = '/auth/login/';
