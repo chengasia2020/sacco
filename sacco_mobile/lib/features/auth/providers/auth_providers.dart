@@ -60,9 +60,8 @@ class RegisterState {
 
 // Auth state notifiers
 class LoginNotifier extends StateNotifier<LoginState> {
-  LoginNotifier(this._authRepository, this._authService) : super(const LoginState());
+  LoginNotifier(this._authService) : super(const LoginState());
 
-  final AuthRepository _authRepository;
   final dynamic _authService; // AuthService
 
   Future<bool> login(LoginRequest loginRequest) async {
@@ -92,10 +91,9 @@ class LoginNotifier extends StateNotifier<LoginState> {
 }
 
 class RegisterNotifier extends StateNotifier<RegisterState> {
-  RegisterNotifier(this._authRepository, this._authService) : super(const RegisterState());
+  RegisterNotifier(this._authRepository) : super(const RegisterState());
 
   final AuthRepository _authRepository;
-  final dynamic _authService; // AuthService
 
   Future<bool> register(Map<String, dynamic> registerData) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
@@ -128,7 +126,6 @@ final currentUserProvider = StateProvider<User?>((ref) => null);
 // Auth providers
 final loginProvider = StateNotifierProvider<LoginNotifier, LoginState>((ref) {
   return LoginNotifier(
-    ref.watch(authRepositoryProvider),
     ref.watch(authServiceProvider),
   );
 });
@@ -136,7 +133,6 @@ final loginProvider = StateNotifierProvider<LoginNotifier, LoginState>((ref) {
 final registerProvider = StateNotifierProvider<RegisterNotifier, RegisterState>((ref) {
   return RegisterNotifier(
     ref.watch(authRepositoryProvider),
-    ref.watch(authServiceProvider),
   );
 });
 
