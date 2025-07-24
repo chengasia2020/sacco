@@ -2,8 +2,6 @@
 import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:local_auth_android/local_auth_android.dart';
-import 'package:local_auth_darwin/local_auth_darwin.dart';
 
 import '../storage/secure_storage_service.dart';
 import '../errors/app_error.dart';
@@ -76,21 +74,17 @@ class BiometricService {
   Future<List<BiometricType>> getAvailableBiometrics() async {
     try {
       final List<BiometricType> biometricTypes = [];
-      final List<BiometricType> availableBiometrics = await _localAuth.getAvailableBiometrics();
+      final List<dynamic> availableBiometrics = await _localAuth.getAvailableBiometrics();
 
       for (final biometric in availableBiometrics) {
-        switch (biometric) {
-          case BiometricType.fingerprint:
-            biometricTypes.add(BiometricType.fingerprint);
-            break;
-          case BiometricType.face:
-            biometricTypes.add(BiometricType.face);
-            break;
-          case BiometricType.voice:
-            biometricTypes.add(BiometricType.voice);
-            break;
-          default:
-            continue;
+        // Map plugin's BiometricType to your own BiometricType
+        final String biometricStr = biometric.toString();
+        if (biometricStr.contains('fingerprint')) {
+          biometricTypes.add(BiometricType.fingerprint);
+        } else if (biometricStr.contains('face')) {
+          biometricTypes.add(BiometricType.face);
+        } else if (biometricStr.contains('voice')) {
+          biometricTypes.add(BiometricType.voice);
         }
       }
 
@@ -108,8 +102,8 @@ class BiometricService {
   }) async {
     try {
       // Check if biometric is enabled for the user
-      final bool isBiometricEnabled = await isBiometricEnabled();
-      if (!isBiometricEnabled) {
+      final bool biometricEnabled = await isBiometricEnabled();
+      if (!biometricEnabled) {
         return const BiometricAuthResult(
           isSuccess: false,
           errorMessage: 'Biometric authentication is not enabled',
@@ -118,24 +112,7 @@ class BiometricService {
 
       // Perform biometric authentication
       final bool isAuthenticated = await _localAuth.authenticate(
-        localizedFallbackTitle: 'Use PIN',
-        authMessages: [
-          AndroidAuthMessages(
-            signInTitle: 'SACCO Mobile Authentication',
-            biometricHint: 'Verify your identity',
-            cancelButton: 'Cancel',
-            deviceCredentialsRequiredTitle: 'Device credentials required',
-            deviceCredentialsSetupDescription: 'Please set up device credentials',
-            goToSettingsButton: 'Go to Settings',
-            goToSettingsDescription: 'Set up biometric authentication in Settings',
-          ),
-          IOSAuthMessages(
-            cancelButton: 'Cancel',
-            goToSettingsButton: 'Go to Settings',
-            goToSettingsDescription: 'Set up biometric authentication in Settings',
-            lockOut: 'Biometric authentication is locked out',
-          ),
-        ],
+        localizedReason: reason,
         options: AuthenticationOptions(
           useErrorDialogs: useErrorDialogs,
           stickyAuth: stickyAuth,
@@ -201,7 +178,7 @@ class BiometricService {
       if (!result.isSuccess) {
         throw AppError(
           message: 'Failed to verify biometric authentication',
-          userFriendlyMessage: result.errorMessage ?? 'Authentication failed',
+          originalError: result.errorMessage ?? 'Authentication failed',
         );
       }
 
@@ -213,7 +190,7 @@ class BiometricService {
     } catch (e) {
       throw AppError(
         message: 'Failed to enable biometric authentication: ${e.toString()}',
-        userFriendlyMessage: 'Failed to enable biometric authentication',
+        originalError: e.toString(),
       );
     }
   }
@@ -226,7 +203,7 @@ class BiometricService {
     } catch (e) {
       throw AppError(
         message: 'Failed to disable biometric authentication: ${e.toString()}',
-        userFriendlyMessage: 'Failed to disable biometric authentication',
+        originalError: e.toString(),
       );
     }
   }
@@ -270,7 +247,7 @@ class BiometricService {
     } catch (e) {
       throw AppError(
         message: 'Failed to set fallback PIN: ${e.toString()}',
-        userFriendlyMessage: 'Failed to set fallback PIN',
+        originalError: e.toString(),
       );
     }
   }
@@ -318,7 +295,7 @@ class BiometricService {
     } catch (e) {
       throw AppError(
         message: 'Failed to reset biometric settings: ${e.toString()}',
-        userFriendlyMessage: 'Failed to reset biometric settings',
+        originalError: e.toString(),
       );
     }
   }
