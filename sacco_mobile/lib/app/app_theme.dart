@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // Private constructor to prevent instantiation
@@ -64,17 +65,60 @@ class AppTheme {
       elevation: 2,
     ),
     scaffoldBackgroundColor: backgroundLight,
-    textTheme: const TextTheme(
-      displayLarge: TextStyle(color: textPrimaryDark, fontSize: 26, fontWeight: FontWeight.bold),
-      displayMedium: TextStyle(color: textPrimaryDark, fontSize: 22, fontWeight: FontWeight.bold),
-      displaySmall: TextStyle(color: textPrimaryDark, fontSize: 18, fontWeight: FontWeight.bold),
-      bodyLarge: TextStyle(color: textPrimaryDark, fontSize: 16, height: 1.5),
-      bodyMedium: TextStyle(color: textPrimaryDark, fontSize: 14, height: 1.4),
-      bodySmall: TextStyle(color: textSecondaryDark, fontSize: 12, height: 1.3),
-      labelLarge: TextStyle(color: primaryColor, fontSize: 14, fontWeight: FontWeight.w600),
-      titleLarge: TextStyle(color: textPrimaryDark, fontSize: 20, fontWeight: FontWeight.w600),
-      titleMedium: TextStyle(color: textPrimaryDark, fontSize: 18, fontWeight: FontWeight.w500),
-      titleSmall: TextStyle(color: textPrimaryDark, fontSize: 16, fontWeight: FontWeight.w500),
+    textTheme: GoogleFonts.interTextTheme().copyWith(
+      // Headings - using Roboto Slab for authority and trust
+      displayLarge: GoogleFonts.robotoSlab(
+        color: textPrimaryDark, 
+        fontSize: 26, 
+        fontWeight: FontWeight.bold,
+      ),
+      displayMedium: GoogleFonts.robotoSlab(
+        color: textPrimaryDark, 
+        fontSize: 22, 
+        fontWeight: FontWeight.bold,
+      ),
+      displaySmall: GoogleFonts.robotoSlab(
+        color: textPrimaryDark, 
+        fontSize: 18, 
+        fontWeight: FontWeight.bold,
+      ),
+      titleLarge: GoogleFonts.robotoSlab(
+        color: textPrimaryDark, 
+        fontSize: 20, 
+        fontWeight: FontWeight.w600,
+      ),
+      titleMedium: GoogleFonts.robotoSlab(
+        color: textPrimaryDark, 
+        fontSize: 18, 
+        fontWeight: FontWeight.w500,
+      ),
+      titleSmall: GoogleFonts.robotoSlab(
+        color: textPrimaryDark, 
+        fontSize: 16, 
+        fontWeight: FontWeight.w500,
+      ),
+      // Body text - using Inter for readability
+      bodyLarge: GoogleFonts.inter(
+        color: textPrimaryDark, 
+        fontSize: 16, 
+        height: 1.5,
+      ),
+      bodyMedium: GoogleFonts.inter(
+        color: textPrimaryDark, 
+        fontSize: 14, 
+        height: 1.4,
+      ),
+      bodySmall: GoogleFonts.inter(
+        color: textSecondaryDark, 
+        fontSize: 12, 
+        height: 1.3,
+      ),
+      // Labels and buttons
+      labelLarge: GoogleFonts.inter(
+        color: primaryColor, 
+        fontSize: 14, 
+        fontWeight: FontWeight.w600,
+      ),
     ),
     inputDecorationTheme: InputDecorationTheme(
       border: OutlineInputBorder(
@@ -102,7 +146,7 @@ class AppTheme {
       style: ElevatedButton.styleFrom(
         backgroundColor: primaryColor,
         foregroundColor: textPrimaryLight,
-        textStyle: const TextStyle(
+        textStyle: GoogleFonts.inter(
           fontWeight: FontWeight.w600,
           fontSize: 16,
           letterSpacing: 0.5,
@@ -118,7 +162,7 @@ class AppTheme {
       style: OutlinedButton.styleFrom(
         foregroundColor: primaryColor,
         side: const BorderSide(color: primaryColor, width: 1.5),
-        textStyle: const TextStyle(
+        textStyle: GoogleFonts.inter(
           fontWeight: FontWeight.w600,
           fontSize: 16,
           letterSpacing: 0.5,
@@ -132,7 +176,7 @@ class AppTheme {
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
         foregroundColor: primaryColor,
-        textStyle: const TextStyle(
+        textStyle: GoogleFonts.inter(
           fontWeight: FontWeight.w600,
           fontSize: 16,
           letterSpacing: 0.5,
@@ -140,7 +184,7 @@ class AppTheme {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       ),
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: cardBackgroundLight,
       elevation: 2,
       shape: RoundedRectangleBorder(
@@ -162,7 +206,7 @@ class AppTheme {
       selectedLabelStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
       unselectedLabelStyle: TextStyle(fontSize: 12),
     ),
-    tabBarTheme: const TabBarTheme(
+    tabBarTheme: const TabBarThemeData(
       labelColor: primaryColor,
       unselectedLabelColor: inactiveColor,
       indicatorColor: primaryColor,
@@ -208,17 +252,60 @@ class AppTheme {
       elevation: 2,
     ),
     scaffoldBackgroundColor: backgroundDark,
-    textTheme: const TextTheme(
-      displayLarge: TextStyle(color: textPrimaryLight, fontSize: 26, fontWeight: FontWeight.bold),
-      displayMedium: TextStyle(color: textPrimaryLight, fontSize: 22, fontWeight: FontWeight.bold),
-      displaySmall: TextStyle(color: textPrimaryLight, fontSize: 18, fontWeight: FontWeight.bold),
-      bodyLarge: TextStyle(color: textPrimaryLight, fontSize: 16, height: 1.5),
-      bodyMedium: TextStyle(color: textPrimaryLight, fontSize: 14, height: 1.4),
-      bodySmall: TextStyle(color: textSecondaryLight, fontSize: 12, height: 1.3),
-      labelLarge: TextStyle(color: accentColor, fontSize: 14, fontWeight: FontWeight.w600),
-      titleLarge: TextStyle(color: textPrimaryLight, fontSize: 20, fontWeight: FontWeight.w600),
-      titleMedium: TextStyle(color: textPrimaryLight, fontSize: 18, fontWeight: FontWeight.w500),
-      titleSmall: TextStyle(color: textPrimaryLight, fontSize: 16, fontWeight: FontWeight.w500),
+    textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme).copyWith(
+      // Headings - using Roboto Slab for authority and trust
+      displayLarge: GoogleFonts.robotoSlab(
+        color: textPrimaryLight, 
+        fontSize: 26, 
+        fontWeight: FontWeight.bold,
+      ),
+      displayMedium: GoogleFonts.robotoSlab(
+        color: textPrimaryLight, 
+        fontSize: 22, 
+        fontWeight: FontWeight.bold,
+      ),
+      displaySmall: GoogleFonts.robotoSlab(
+        color: textPrimaryLight, 
+        fontSize: 18, 
+        fontWeight: FontWeight.bold,
+      ),
+      titleLarge: GoogleFonts.robotoSlab(
+        color: textPrimaryLight, 
+        fontSize: 20, 
+        fontWeight: FontWeight.w600,
+      ),
+      titleMedium: GoogleFonts.robotoSlab(
+        color: textPrimaryLight, 
+        fontSize: 18, 
+        fontWeight: FontWeight.w500,
+      ),
+      titleSmall: GoogleFonts.robotoSlab(
+        color: textPrimaryLight, 
+        fontSize: 16, 
+        fontWeight: FontWeight.w500,
+      ),
+      // Body text - using Inter for readability
+      bodyLarge: GoogleFonts.inter(
+        color: textPrimaryLight, 
+        fontSize: 16, 
+        height: 1.5,
+      ),
+      bodyMedium: GoogleFonts.inter(
+        color: textPrimaryLight, 
+        fontSize: 14, 
+        height: 1.4,
+      ),
+      bodySmall: GoogleFonts.inter(
+        color: textSecondaryLight, 
+        fontSize: 12, 
+        height: 1.3,
+      ),
+      // Labels and buttons
+      labelLarge: GoogleFonts.inter(
+        color: accentColor, 
+        fontSize: 14, 
+        fontWeight: FontWeight.w600,
+      ),
     ),
     inputDecorationTheme: InputDecorationTheme(
       border: OutlineInputBorder(
@@ -246,7 +333,7 @@ class AppTheme {
       style: ElevatedButton.styleFrom(
         backgroundColor: primaryColor,
         foregroundColor: textPrimaryLight,
-        textStyle: const TextStyle(
+        textStyle: GoogleFonts.inter(
           fontWeight: FontWeight.w600,
           fontSize: 16,
           letterSpacing: 0.5,
@@ -262,7 +349,7 @@ class AppTheme {
       style: OutlinedButton.styleFrom(
         foregroundColor: accentColor,
         side: const BorderSide(color: accentColor, width: 1.5),
-        textStyle: const TextStyle(
+        textStyle: GoogleFonts.inter(
           fontWeight: FontWeight.w600,
           fontSize: 16,
           letterSpacing: 0.5,
@@ -276,7 +363,7 @@ class AppTheme {
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
         foregroundColor: accentColor,
-        textStyle: const TextStyle(
+        textStyle: GoogleFonts.inter(
           fontWeight: FontWeight.w600,
           fontSize: 16,
           letterSpacing: 0.5,
@@ -284,7 +371,7 @@ class AppTheme {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       ),
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: cardBackgroundDark,
       elevation: 3,
       shape: RoundedRectangleBorder(
@@ -306,7 +393,7 @@ class AppTheme {
       selectedLabelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
       unselectedLabelStyle: const TextStyle(fontSize: 12),
     ),
-    tabBarTheme: const TabBarTheme(
+    tabBarTheme: const TabBarThemeData(
       labelColor: accentColor,
       unselectedLabelColor: textSecondaryLight,
       indicatorColor: accentColor,
