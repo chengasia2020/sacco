@@ -1,23 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sacco_mobile/app/app_theme.dart';
-import 'package:sacco_mobile/features/auth/viewmodels/login_viewmodel.dart';
-import 'package:sacco_mobile/features/dashboard/views/dashboard_screen.dart';
-import 'package:sacco_mobile/features/auth/views/register_screen.dart';
+import 'package:sacco_mobile/app/app_constants.dart';
+import 'package:sacco_mobile/features/auth/providers/auth_providers.dart';
+import 'package:sacco_mobile/features/auth/models/login_request.dart';
 import 'package:sacco_mobile/shared/widgets/app_button.dart';
 import 'package:sacco_mobile/shared/widgets/app_text_field.dart';
-import 'package:sacco_mobile/shared/widgets/loading_indicator.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
 
   @override
@@ -25,13 +26,62 @@ class _LoginScreenState extends State<LoginScreen> {
     super.initState();
     // Reset login state when screen loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<LoginViewModel>().resetState();
+      ref.read(loginProvider.notifier).resetState();
     });
   }
 
   @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  // Form validation methods
+  String? _validateEmail(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Email is required';
+    }
+
+    final RegExp emailRegex = RegExp(AppConstants.emailPattern);
+    if (!emailRegex.hasMatch(value)) {
+      return 'Enter a valid email address';
+    }
+
+    return null;
+  }
+
+  String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Password is required';
+    }
+
+    if (value.length < 8) {
+      return 'Password must be at least 8 characters';
+    }
+
+    return null;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final viewModel = context.watch<LoginViewModel>();
+    final loginState = ref.watch(loginProvider);
+
+    // Navigate to dashboard if already authenticated
+    ref.listen(authStatusProvider, (previous, next) {
+      if (next && mounted) {
+        context.go('/dashboard');
+      }
+    });
+
+    // Show success navigation
+    ref.listen(loginProvider, (previous, next) {
+      if (next.isSuccess && next.user != null && mounted) {
+        // Update current user
+        ref.read(currentUserProvider.notifier).state = next.user;
+        context.go('/dashboard');
+      }
+    });
 
     return Scaffold(
       body: SafeArea(
@@ -79,7 +129,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 32),
 
                   // Error message if there is one
-                  if (viewModel.errorMessage != null) ...[
+                  if (loginState.errorMessage != null) ...[
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
@@ -88,7 +138,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         border: Border.all(color: Colors.red[200]!),
                       ),
                       child: Text(
-                        viewModel.errorMessage!,
+                        loginState.errorMessage!,
                         style: TextStyle(
                           color: Colors.red[800],
                         ),
@@ -99,24 +149,24 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   // Email field
                   AppTextField(
-                    controller: viewModel.emailController,
+                    controller: _emailController,
                     labelText: 'Email',
                     hintText: 'Enter your email',
                     prefixIcon: const Icon(Icons.email_outlined),
                     keyboardType: TextInputType.emailAddress,
-                    validator: viewModel.validateEmail,
+                    validator: _validateEmail,
                     textInputAction: TextInputAction.next,
                   ),
                   const SizedBox(height: 16),
 
                   // Password field
                   AppTextField(
-                    controller: viewModel.passwordController,
+                    controller: _passwordController,
                     labelText: 'Password',
                     hintText: 'Enter your password',
                     prefixIcon: const Icon(Icons.lock_outline),
                     obscureText: !_isPasswordVisible,
-                    validator: viewModel.validatePassword,
+                    validator: _validatePassword,
                     textInputAction: TextInputAction.done,
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -139,6 +189,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: TextButton(
                       onPressed: () {
                         // TODO: Navigate to forgot password screen
+                        context.push('/forgot-password');
                       },
                       child: const Text('Forgot Password?'),
                     ),
@@ -148,8 +199,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   // Login button
                   AppButton(
                     text: 'Login',
-                    isLoading: viewModel.state == LoginState.loading,
-                    onPressed: viewModel.state == LoginState.loading
+                    isLoading: loginState.isLoading,
+                    onPressed: loginState.isLoading
                         ? null
                         : () async {
                             // Hide keyboard
@@ -157,12 +208,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
                             // Validate form
                             if (_formKey.currentState?.validate() ?? false) {
-                              final success = await viewModel.login();
+                              final loginRequest = LoginRequest(
+                                email: _emailController.text.trim(),
+                                password: _passwordController.text,
+                              );
 
-                              if (success && mounted) {
-                                // Navigate to dashboard
-                                context.go('/dashboard');
-                              }
+                              await ref
+                                  .read(loginProvider.notifier)
+                                  .login(loginRequest);
                             }
                           },
                   ),
@@ -178,11 +231,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       TextButton(
                         onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => const RegisterScreen(),
-                            ),
-                          );
+                          context.push('/register');
                         },
                         child: const Text('Register'),
                       ),
