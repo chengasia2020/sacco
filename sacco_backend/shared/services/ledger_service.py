@@ -22,53 +22,68 @@ class LedgerService:
     @staticmethod
     @transaction.atomic
     def create_deposit_entries(_transaction: Transaction, fee: Decimal) -> None:
+        # Get current balances
+        cash_balance = LedgerService._get_account_balance(LedgerService.ACCOUNT_CODES['CASH'])
+        savings_balance = LedgerService._get_account_balance(LedgerService.ACCOUNT_CODES['SAVINGS'])
+        fees_balance = LedgerService._get_account_balance(LedgerService.ACCOUNT_CODES['FEES_INCOME'])
+
         # Debit cash/bank account
         LedgerEntry.objects.create(
-            transaction=transaction,
+            transaction=_transaction,
             account_code=LedgerService.ACCOUNT_CODES['CASH'],
             entry_type='DEBIT',
             amount=_transaction.amount,
+            balance_after=cash_balance + _transaction.amount,
             description=f"Cash deposit {_transaction.transaction_ref}"
         )
 
         # Credit member savings account
         net_amount = _transaction.amount - fee
         LedgerEntry.objects.create(
-            transaction=transaction,
+            transaction=_transaction,
             account_code=LedgerService.ACCOUNT_CODES['SAVINGS'],
             entry_type='CREDIT',
             amount=net_amount,
+            balance_after=savings_balance + net_amount,
             description=f"Savings deposit {_transaction.transaction_ref}"
         )
 
         if fee > 0:
             LedgerEntry.objects.create(
-                transaction=transaction,
+                transaction=_transaction,
                 account_code=LedgerService.ACCOUNT_CODES['FEES_INCOME'],
                 entry_type='CREDIT',
                 amount=fee,
+                balance_after=fees_balance + fee,
                 description=f"Deposit fee {_transaction.transaction_ref}"
             )
 
     @staticmethod
     @transaction.atomic
     def create_withdrawal_entries(_transaction: Transaction, fee: Decimal) -> None:
+        # Get current balances
+        cash_balance = LedgerService._get_account_balance(LedgerService.ACCOUNT_CODES['CASH'])
+        savings_balance = LedgerService._get_account_balance(LedgerService.ACCOUNT_CODES['SAVINGS'])
+        fees_balance = LedgerService._get_account_balance(LedgerService.ACCOUNT_CODES['FEES_INCOME'])
+
         # Credit cash/bank account
         LedgerEntry.objects.create(
             transaction=_transaction,
             account_code=LedgerService.ACCOUNT_CODES['CASH'],
             entry_type='CREDIT',
             amount=_transaction.amount,
+            balance_after=cash_balance - _transaction.amount,
             description=f"Cash withdrawal {_transaction.transaction_ref}"
         )
 
         # Debit member savings account
         total_amount = _transaction.amount + fee
         LedgerEntry.objects.create(
-            transaction=transaction,
+            transaction=_transaction,
             account_code=LedgerService.ACCOUNT_CODES['SAVINGS'],
             entry_type='DEBIT',
             amount=total_amount,
+            balance_after=savings_balance - total_amount,
             description=f"Savings withdrawal {_transaction.transaction_ref}"
         )
 
@@ -78,8 +93,18 @@ class LedgerService:
                 account_code=LedgerService.ACCOUNT_CODES['FEES_INCOME'],
                 entry_type='CREDIT',
                 amount=fee,
+                balance_after=fees_balance + fee,
                 description=f"Withdrawal fee {_transaction.transaction_ref}"
             )
+
+    @staticmethod
+    def _get_account_balance(account_code: str) -> Decimal:
+        """Get the current balance for an account code."""
+        latest_entry = LedgerEntry.objects.filter(
+            account_code=account_code
+        ).order_by('-created_at').first()
+        
+        return latest_entry.balance_after if latest_entry else Decimal('0')
 
     @staticmethod
     @transaction.atomic
