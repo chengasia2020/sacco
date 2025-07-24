@@ -212,3 +212,49 @@ class NotificationService:
         }
 
         cls.send_notification(_transaction.member, notification_data)
+
+    @staticmethod
+    def send_loan_approval_notification_sync(member: Member) -> None:
+        """Synchronous version for use in business logic"""
+        try:
+            # Create notification record synchronously
+            notification = Notification.objects.create(
+                member=member,
+                type='LOAN_APPROVAL',
+                title='Loan Approved',
+                message='Your loan application has been approved! Disbursement will be processed shortly.',
+                priority='HIGH'
+            )
+            
+            # In a real application, you would queue this for async processing
+            # For now, we'll just create the notification record
+            # send_loan_approval_notification.delay(member.id)
+            
+        except Exception as e:
+            # Log error but don't fail the loan approval process
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Failed to send loan approval notification: {str(e)}")
+
+    @staticmethod
+    def send_loan_disbursement_notification_sync(member: Member) -> None:
+        """Synchronous version for use in business logic"""
+        try:
+            # Create notification record synchronously
+            notification = Notification.objects.create(
+                member=member,
+                type='LOAN_DISBURSEMENT',
+                title='Loan Disbursed',
+                message='Your loan has been disbursed to your account. Please check your balance.',
+                priority='HIGH'
+            )
+            
+            # In a real application, you would queue this for async processing
+            # For now, we'll just create the notification record
+            # send_loan_disbursement_notification.delay(member.id)
+            
+        except Exception as e:
+            # Log error but don't fail the loan disbursement process
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Failed to send loan disbursement notification: {str(e)}")
