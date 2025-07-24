@@ -51,13 +51,14 @@ class RiskManagementTest(TestCase):
             membership_type='INDIVIDUAL'
         )
 
-        # Create risk profile
+        # Create risk profile (using timezone-aware datetime)
+        now = timezone.now()
         self.risk_profile = RiskProfile.objects.create(
             member=self.member,
             credit_score=700,
             risk_level='LOW',
-            last_assessment_date=timezone.now(),
-            next_assessment_date=timezone.now() + timedelta(days=90),
+            last_assessment_date=now,
+            next_assessment_date=now + timedelta(days=90),
             factors=json.dumps({
                 'income_stability': 'Stable',
                 'credit_history': 'Good',
@@ -97,6 +98,7 @@ class RiskManagementTest(TestCase):
     def _mock_assess_member_risk(self, member_id):
         """Synchronous version of assess_member_risk for testing"""
         member = Member.objects.get(id=member_id)
+        now = timezone.now()
 
         # Use existing risk profile or create new
         risk_profile, created = RiskProfile.objects.get_or_create(
@@ -104,8 +106,8 @@ class RiskManagementTest(TestCase):
             defaults={
                 'credit_score': 700,
                 'risk_level': 'LOW',
-                'last_assessment_date': timezone.now(),
-                'next_assessment_date': timezone.now() + timedelta(days=90),
+                'last_assessment_date': now,
+                'next_assessment_date': now + timedelta(days=90),
                 'factors': json.dumps({
                     'payment_history': 'Good',
                     'credit_utilization': 'Low',
@@ -117,8 +119,9 @@ class RiskManagementTest(TestCase):
 
         if not created:
             # Update existing profile
-            risk_profile.last_assessment_date = timezone.now()
-            risk_profile.next_assessment_date = timezone.now() + timedelta(days=90)
+            current_time = timezone.now()
+            risk_profile.last_assessment_date = current_time
+            risk_profile.next_assessment_date = current_time + timedelta(days=90)
             risk_profile.save()
 
         return risk_profile
