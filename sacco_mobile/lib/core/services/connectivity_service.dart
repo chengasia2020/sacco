@@ -1,84 +1,37 @@
-// lib/core/services/connectivity_service.dart
 import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
-enum NetworkStatus { online, offline }
-
 class ConnectivityService {
-  final Connectivity _connectivity = Connectivity();
-  final StreamController<NetworkStatus> _networkStatusController =
-      StreamController<NetworkStatus>.broadcast();
+  final Connectivity _connectivity;
+  StreamSubscription<bool>? _connectivitySubscription;
+  
+  ConnectivityService(this._connectivity);
 
-  // Stream of network status changes that can be listened to
-  Stream<NetworkStatus> get networkStatusStream =>
-      _networkStatusController.stream;
+  /// Check current connectivity status
+  Future<bool> isConnected() async {
+    final result = await _connectivity.checkConnectivity();
+    return !result.contains(ConnectivityResult.none);
+  }
 
-  // Current connectivity result
-  ConnectivityResult _currentConnectivityResult = ConnectivityResult.none;
-
-  ConnectivityResult get currentConnectivityResult =>
-      _currentConnectivityResult;
-
-  ConnectivityService() {
-    // Initialize with the current connectivity status
-    _initConnectivity();
-
-    // Listen for changes in connectivity
-    _connectivity.onConnectivityChanged.listen((results) {
-      for (var result in results) {
-        _updateConnectionStatus(result);
-      }
+  /// Get connectivity stream
+  Stream<bool> get connectivityStream {
+    return _connectivity.onConnectivityChanged.map((results) {
+      return !results.contains(ConnectivityResult.none);
     });
   }
 
-  // Initialize connectivity status
-  Future<void> _initConnectivity() async {
-    try {
-      final connectivityResults = await _connectivity.checkConnectivity();
-      _currentConnectivityResult = connectivityResults.isNotEmpty
-          ? connectivityResults.first
-          : ConnectivityResult.none;
-      _networkStatusController
-          .add(_getNetworkStatus(_currentConnectivityResult));
-    } catch (e) {
-      _networkStatusController.add(NetworkStatus.offline);
-      print('Error initializing connectivity: $e'); // Add error logging
-    }
+  /// Listen to connectivity changes
+  void startListening(Function(bool) onConnectivityChanged) {
+    _connectivitySubscription = connectivityStream.listen(onConnectivityChanged);
   }
 
-  // Update connection status based on connectivity changes
-  void _updateConnectionStatus(ConnectivityResult result) {
-    _currentConnectivityResult = result;
-    _networkStatusController.add(_getNetworkStatus(result));
+  /// Stop listening to connectivity changes
+  void stopListening() {
+    _connectivitySubscription?.cancel();
+    _connectivitySubscription = null;
   }
 
-  // Convert ConnectivityResult to NetworkStatus
-  NetworkStatus _getNetworkStatus(ConnectivityResult result) {
-    return result == ConnectivityResult.none
-        ? NetworkStatus.offline
-        : NetworkStatus.online;
-  }
-
-  // Check if currently connected
-  Future<bool> isConnected() async {
-    final connectivityResult = await _connectivity.checkConnectivity();
-    return connectivityResult != ConnectivityResult.none;
-  }
-
-  // Check if currently on a WiFi connection
-  Future<bool> isOnWifi() async {
-    final connectivityResult = await _connectivity.checkConnectivity();
-    return connectivityResult == ConnectivityResult.wifi;
-  }
-
-  // Check if currently on a mobile connection
-  Future<bool> isOnMobile() async {
-    final connectivityResult = await _connectivity.checkConnectivity();
-    return connectivityResult == ConnectivityResult.mobile;
-  }
-
-  // Dispose of resources
   void dispose() {
-    _networkStatusController.close();
+    stopListening();
   }
 }
