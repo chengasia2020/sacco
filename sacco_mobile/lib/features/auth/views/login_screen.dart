@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:sacco_mobile/app/app_theme.dart';
 import 'package:sacco_mobile/features/auth/viewmodels/login_viewmodel.dart';
 import 'package:sacco_mobile/features/dashboard/views/dashboard_screen.dart';
@@ -160,12 +161,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                               if (success && mounted) {
                                 // Navigate to dashboard
-                                Navigator.of(context).pushReplacement(
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        const DashboardScreen(),
-                                  ),
-                                );
+                                context.go('/dashboard');
                               }
                             }
                           },
