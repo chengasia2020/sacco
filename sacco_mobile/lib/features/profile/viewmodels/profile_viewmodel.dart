@@ -88,7 +88,7 @@ class ProfileViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final photoUrl = await _profileRepository.uploadProfilePhoto(photoFile);
+      await _profileRepository.uploadProfilePhoto(photoFile);
 
       // Update member profile with new photo URL
       if (_memberProfile != null) {
@@ -119,8 +119,7 @@ class ProfileViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final documentUrl =
-          await _profileRepository.uploadIdDocument(documentFile);
+      await _profileRepository.uploadIdDocument(documentFile);
 
       // Update member profile with new document URL
       if (_memberProfile != null) {
@@ -151,8 +150,7 @@ class ProfileViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final addedNextOfKin =
-          await _profileRepository.addNextOfKin(nextOfKinData);
+      await _profileRepository.addNextOfKin(nextOfKinData);
 
       // Reload next of kin list
       final nextOfKin = await _profileRepository.getMemberNextOfKin();
@@ -182,7 +180,7 @@ class ProfileViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final updatedNextOfKin = await _profileRepository.updateNextOfKin(
+      await _profileRepository.updateNextOfKin(
         nextOfKinId,
         nextOfKinData,
       );

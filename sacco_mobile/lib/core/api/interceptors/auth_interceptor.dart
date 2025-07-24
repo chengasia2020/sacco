@@ -1,10 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:sacco_mobile/app/app_constants.dart';
-import 'package:sacco_mobile/core/di/service_locator.dart';
 import 'package:sacco_mobile/core/storage/secure_storage_service.dart';
 
 class AuthInterceptor extends Interceptor {
-  final SecureStorageService _secureStorage = getIt<SecureStorageService>();
+  final SecureStorageService _secureStorage;
+  
+  AuthInterceptor({required SecureStorageService secureStorage}) 
+      : _secureStorage = secureStorage;
   
   @override
   Future<void> onRequest(

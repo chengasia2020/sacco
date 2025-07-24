@@ -1,6 +1,5 @@
 // lib/core/services/cache_service.dart
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path_provider/path_provider.dart';
@@ -97,7 +96,7 @@ class CacheService {
     } catch (e) {
       throw AppError(
         message: 'Failed to initialize cache service: ${e.toString()}',
-        userFriendlyMessage: 'Failed to initialize local storage',
+        originalError: e.toString(),
       );
     }
   }
@@ -130,7 +129,7 @@ class CacheService {
     } catch (e) {
       throw AppError(
         message: 'Failed to store cache item: ${e.toString()}',
-        userFriendlyMessage: 'Failed to save data locally',
+        originalError: e.toString(),
       );
     }
   }
@@ -196,7 +195,7 @@ class CacheService {
     } catch (e) {
       throw AppError(
         message: 'Failed to remove cache item: ${e.toString()}',
-        userFriendlyMessage: 'Failed to remove cached data',
+        originalError: e.toString(),
       );
     }
   }
@@ -212,7 +211,7 @@ class CacheService {
     } catch (e) {
       throw AppError(
         message: 'Failed to clear cache type: ${e.toString()}',
-        userFriendlyMessage: 'Failed to clear cached data',
+        originalError: e.toString(),
       );
     }
   }
@@ -232,7 +231,7 @@ class CacheService {
     } catch (e) {
       throw AppError(
         message: 'Failed to clear all cache: ${e.toString()}',
-        userFriendlyMessage: 'Failed to clear all cached data',
+        originalError: e.toString(),
       );
     }
   }
@@ -322,7 +321,6 @@ class CacheService {
       case CacheType.apiResponse:
       case CacheType.documents:
       case CacheType.temporary:
-      default:
         return _mainBox;
     }
   }
@@ -344,7 +342,6 @@ class CacheService {
       case CacheType.documents:
         return const Duration(days: 90);
       case CacheType.temporary:
-      default:
         return _defaultExpiration;
     }
   }

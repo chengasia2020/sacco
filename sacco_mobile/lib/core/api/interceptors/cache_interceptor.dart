@@ -1,5 +1,4 @@
 // lib/core/api/interceptors/cache_interceptor.dart
-import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 

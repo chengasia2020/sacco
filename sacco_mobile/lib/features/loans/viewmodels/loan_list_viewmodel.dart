@@ -79,13 +79,12 @@ class LoanListViewModel extends ChangeNotifier {
   Future<Loan?> getLoanById(int loanId) async {
     try {
       // First check if loan is already in the list
-      final existingLoan = _loans.firstWhere(
+      final existingLoanIndex = _loans.indexWhere(
         (loan) => loan.id == loanId,
-        orElse: () => null as Loan,
       );
 
-      if (existingLoan != null) {
-        return existingLoan;
+      if (existingLoanIndex != -1) {
+        return _loans[existingLoanIndex];
       }
 
       // If not found, fetch from API

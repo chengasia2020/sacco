@@ -12,14 +12,20 @@ import 'package:sacco_mobile/core/api/interceptors/analytics_interceptor.dart';
 import 'package:sacco_mobile/core/errors/app_error.dart';
 import 'package:sacco_mobile/core/services/connectivity_service.dart';
 import 'package:sacco_mobile/core/services/cache_service.dart';
+import 'package:sacco_mobile/core/storage/secure_storage_service.dart';
 
 class ApiClient {
   late final Dio _dio;
   final ConnectivityService _connectivityService;
   final CacheService? _cacheService;
+  final SecureStorageService _secureStorageService;
   late final AnalyticsInterceptor _analyticsInterceptor;
 
-  ApiClient(this._connectivityService, [this._cacheService]) {
+  ApiClient(
+    this._connectivityService, 
+    this._secureStorageService,
+    [this._cacheService]
+  ) {
     _dio = Dio(
       BaseOptions(
         baseUrl: AppConstants.apiBaseUrl,
@@ -40,16 +46,16 @@ class ApiClient {
     
     // 1. Analytics interceptor (first to capture all requests)
     if (_cacheService != null) {
-      _analyticsInterceptor = AnalyticsInterceptor(_cacheService!);
+      _analyticsInterceptor = AnalyticsInterceptor(_cacheService);
       _dio.interceptors.add(_analyticsInterceptor);
     }
 
     // 2. Auth interceptor (add auth headers)
-    _dio.interceptors.add(AuthInterceptor());
+    _dio.interceptors.add(AuthInterceptor(secureStorage: _secureStorageService));
 
     // 3. Cache interceptor (serve cached responses if available)
     if (_cacheService != null) {
-      _dio.interceptors.add(CacheInterceptor(_cacheService!));
+      _dio.interceptors.add(CacheInterceptor(_cacheService));
     }
 
     // 4. Retry interceptor with circuit breaker (handle failures)

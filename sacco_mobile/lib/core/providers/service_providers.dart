@@ -30,7 +30,7 @@ final secureStorageServiceProvider = Provider<SecureStorageService>((ref) {
 final apiClientProvider = Provider<ApiClient>((ref) {
   return ApiClient(
     ref.watch(connectivityServiceProvider),
-    ref.watch(cacheServiceProvider),
+    ref.watch(secureStorageServiceProvider),
   );
 });
 

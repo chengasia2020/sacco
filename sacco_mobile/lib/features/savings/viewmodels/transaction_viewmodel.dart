@@ -151,13 +151,12 @@ class TransactionViewModel extends ChangeNotifier {
   Future<Transaction?> getTransactionById(int transactionId) async {
     try {
       // First check if transaction is already in the list
-      final existingTransaction = _transactions.firstWhere(
+      final existingTransactionIndex = _transactions.indexWhere(
         (tx) => tx.id == transactionId,
-        orElse: () => null as Transaction,
       );
 
-      if (existingTransaction != null) {
-        return existingTransaction;
+      if (existingTransactionIndex != -1) {
+        return _transactions[existingTransactionIndex];
       }
 
       // If not found, attempt to fetch from API (implementation depends on API)

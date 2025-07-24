@@ -1,4 +1,8 @@
 // lib/core/di/service_locator.dart
+// DEPRECATED: This service locator is being phased out in favor of Riverpod providers.
+// Only kept for backward compatibility with screens that haven't been migrated yet.
+// See lib/core/providers/service_providers.dart for the new Riverpod-based DI.
+
 import 'package:get_it/get_it.dart';
 import 'package:sacco_mobile/core/api/api_client.dart';
 import 'package:sacco_mobile/core/services/auth_service.dart';
@@ -7,8 +11,6 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:sacco_mobile/core/services/connectivity_service.dart';
 import 'package:sacco_mobile/features/auth/repositories/auth_repository.dart';
-import 'package:sacco_mobile/features/auth/viewmodels/login_viewmodel.dart';
-import 'package:sacco_mobile/features/auth/viewmodels/register_viewmodel.dart';
 import 'package:sacco_mobile/features/dashboard/viewmodels/dashboard_viewmodel.dart';
 import 'package:sacco_mobile/features/loans/repositories/loan_repository.dart';
 import 'package:sacco_mobile/features/loans/viewmodels/loan_list_viewmodel.dart';
@@ -23,15 +25,18 @@ import 'package:sacco_mobile/features/profile/viewmodels/profile_viewmodel.dart'
 // Global instance of GetIt service locator
 final GetIt getIt = GetIt.instance;
 
+@Deprecated('Use Riverpod providers instead. This will be removed once all screens are migrated.')
 Future<void> setupServiceLocator() async {
-  // Register core services as singletons
+  // LEGACY SUPPORT: Register core services for backward compatibility
+  // These should be managed by Riverpod providers in new code
+  
   getIt.registerLazySingleton<ConnectivityService>(() => ConnectivityService(Connectivity()));
   getIt.registerLazySingleton<SecureStorageService>(
       () => SecureStorageService(const FlutterSecureStorage()));
 
-  // ApiClient now depends on ConnectivityService for network status
   getIt.registerLazySingleton<ApiClient>(() => ApiClient(
         getIt<ConnectivityService>(),
+        getIt<SecureStorageService>(), // Added the missing second argument
       ));
 
   getIt.registerLazySingleton<AuthService>(() => AuthService(
@@ -39,7 +44,7 @@ Future<void> setupServiceLocator() async {
         getIt<SecureStorageService>(),
       ));
 
-  // Register repositories
+  // Register repositories - these will be migrated to Riverpod
   getIt.registerLazySingleton<AuthRepository>(() => AuthRepository(
         getIt<ApiClient>(),
       ));
@@ -56,18 +61,9 @@ Future<void> setupServiceLocator() async {
         getIt<ApiClient>(),
       ));
 
-  // Register view models as factories (created anew each time)
-  getIt.registerFactory<LoginViewModel>(() => LoginViewModel(
-        getIt<AuthRepository>(),
-        getIt<AuthService>(),
-        getIt<ConnectivityService>(),
-      ));
-
-  getIt.registerFactory<RegisterViewModel>(() => RegisterViewModel(
-        getIt<AuthRepository>(),
-        getIt<AuthService>(),
-      ));
-
+  // LEGACY ViewModels - to be removed once screens are migrated to Riverpod
+  // Auth ViewModels have already been migrated to Riverpod providers
+  
   getIt.registerFactory<DashboardViewModel>(() => DashboardViewModel(
         getIt<AuthService>(),
         getIt<SavingsRepository>(),
@@ -78,10 +74,9 @@ Future<void> setupServiceLocator() async {
         getIt<LoanRepository>(),
       ));
 
-  getIt
-      .registerFactory<LoanApplicationViewModel>(() => LoanApplicationViewModel(
-            getIt<LoanRepository>(),
-          ));
+  getIt.registerFactory<LoanApplicationViewModel>(() => LoanApplicationViewModel(
+        getIt<LoanRepository>(),
+      ));
 
   getIt.registerFactory<LoanRepaymentViewModel>(() => LoanRepaymentViewModel(
         getIt<LoanRepository>(),

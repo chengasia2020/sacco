@@ -1,5 +1,6 @@
 // lib/core/api/interceptors/retry_interceptor.dart
 import 'dart:math';
+import 'dart:math' as math;
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
@@ -143,8 +144,8 @@ class RetryInterceptor extends Interceptor {
 
     // Don't retry client errors (4xx) except for specific cases
     if (error.response?.statusCode != null &&
-        error.response!.statusCode >= 400 &&
-        error.response!.statusCode < 500 &&
+        error.response!.statusCode! >= 400 &&
+        error.response!.statusCode! < 500 &&
         !retryableStatusCodes.contains(error.response!.statusCode)) {
       debugPrint('Retry: HTTP ${error.response!.statusCode} is not retryable (client error)');
       return false;

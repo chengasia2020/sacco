@@ -6,13 +6,16 @@ import 'package:firebase_core/firebase_core.dart';
 import 'app/app.dart';
 import 'app/app_config.dart';
 import 'core/providers/service_providers.dart';
+import 'firebase_options.dart';
 
 void main() async {
   // Ensure Flutter bindings are initialized
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize Firebase
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   // Set app environment
   AppConfig.setEnvironment(Environment.development);
