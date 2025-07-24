@@ -1,1 +1,68 @@
-import 'package:flutter/material.dart';\nimport 'package:go_router/go_router.dart';\nimport 'package:riverpod_annotation/riverpod_annotation.dart';\n\nimport '../../features/auth/presentation/pages/login_page.dart';\nimport '../../features/auth/presentation/pages/register_page.dart';\nimport '../../features/auth/presentation/pages/biometric_setup_page.dart';\nimport '../../features/onboarding/presentation/pages/onboarding_page.dart';\nimport '../../features/onboarding/presentation/pages/splash_page.dart';\nimport '../../features/dashboard/presentation/pages/dashboard_page.dart';\nimport '../../features/savings/presentation/pages/savings_page.dart';\nimport '../../features/savings/presentation/pages/savings_detail_page.dart';\nimport '../../features/savings/presentation/pages/deposit_page.dart';\nimport '../../features/savings/presentation/pages/withdraw_page.dart';\nimport '../../features/loans/presentation/pages/loans_page.dart';\nimport '../../features/loans/presentation/pages/loan_detail_page.dart';\nimport '../../features/loans/presentation/pages/loan_application_page.dart';\nimport '../../features/loans/presentation/pages/loan_calculator_page.dart';\nimport '../../features/transactions/presentation/pages/transactions_page.dart';\nimport '../../features/transactions/presentation/pages/transaction_detail_page.dart';\nimport '../../features/transactions/presentation/pages/transfer_money_page.dart';\nimport '../../features/profile/presentation/pages/profile_page.dart';\nimport '../../features/profile/presentation/pages/edit_profile_page.dart';\nimport '../../features/profile/presentation/pages/security_settings_page.dart';\nimport '../../features/profile/presentation/pages/document_upload_page.dart';\nimport '../../features/notifications/presentation/pages/notifications_page.dart';\nimport '../../features/support/presentation/pages/support_page.dart';\nimport '../../features/support/presentation/pages/chat_page.dart';\nimport '../../features/reports/presentation/pages/reports_page.dart';\nimport '../../features/investments/presentation/pages/investments_page.dart';\nimport '../../features/budget/presentation/pages/budget_page.dart';\n\npart 'app_router.g.dart';\n\n// Route names\nclass AppRoutes {\n  static const splash = '/splash';\n  static const onboarding = '/onboarding';\n  static const login = '/login';\n  static const register = '/register';\n  static const biometricSetup = '/biometric-setup';\n  static const dashboard = '/dashboard';\n  \n  // Savings routes\n  static const savings = '/savings';\n  static const savingsDetail = '/savings/:accountId';\n  static const deposit = '/savings/deposit';\n  static const withdraw = '/savings/withdraw';\n  \n  // Loans routes\n  static const loans = '/loans';\n  static const loanDetail = '/loans/:loanId';\n  static const loanApplication = '/loans/apply';\n  static const loanCalculator = '/loans/calculator';\n  \n  // Transactions routes  \n  static const transactions = '/transactions';\n  static const transactionDetail = '/transactions/:transactionId';\n  static const transferMoney = '/transfer';\n  \n  // Profile routes\n  static const profile = '/profile';\n  static const editProfile = '/profile/edit';\n  static const securitySettings = '/profile/security';\n  static const documentUpload = '/profile/documents';\n  \n  // Other features\n  static const notifications = '/notifications';\n  static const support = '/support';\n  static const chat = '/support/chat';\n  static const reports = '/reports';\n  static const investments = '/investments';\n  static const budget = '/budget';\n}\n\n@riverpod\nGoRouter appRouter(AppRouterRef ref) {\n  return GoRouter(\n    initialLocation: AppRoutes.splash,\n    debugLogDiagnostics: true,\n    routes: [\n      // Splash & Onboarding\n      GoRoute(\n        path: AppRoutes.splash,\n        name: 'splash',\n        builder: (context, state) => const SplashPage(),\n      ),\n      GoRoute(\n        path: AppRoutes.onboarding,\n        name: 'onboarding',\n        builder: (context, state) => const OnboardingPage(),\n      ),\n      \n      // Authentication\n      GoRoute(\n        path: AppRoutes.login,\n        name: 'login',\n        builder: (context, state) => const LoginPage(),\n      ),\n      GoRoute(\n        path: AppRoutes.register,\n        name: 'register',\n        builder: (context, state) => const RegisterPage(),\n      ),\n      GoRoute(\n        path: AppRoutes.biometricSetup,\n        name: 'biometric-setup',\n        builder: (context, state) => const BiometricSetupPage(),\n      ),\n      \n      // Dashboard\n      GoRoute(\n        path: AppRoutes.dashboard,\n        name: 'dashboard',\n        builder: (context, state) => const DashboardPage(),\n      ),\n      \n      // Savings\n      GoRoute(\n        path: AppRoutes.savings,\n        name: 'savings',\n        builder: (context, state) => const SavingsPage(),\n        routes: [\n          GoRoute(\n            path: 'deposit',\n            name: 'deposit',\n            builder: (context, state) => const DepositPage(),\n          ),\n          GoRoute(\n            path: 'withdraw',\n            name: 'withdraw',\n            builder: (context, state) => const WithdrawPage(),\n          ),\n        ],\n      ),\n      GoRoute(\n        path: '/savings/:accountId',\n        name: 'savings-detail',\n        builder: (context, state) {\n          final accountId = state.pathParameters['accountId']!;\n          return SavingsDetailPage(accountId: accountId);\n        },\n      ),\n      \n      // Loans\n      GoRoute(\n        path: AppRoutes.loans,\n        name: 'loans',\n        builder: (context, state) => const LoansPage(),\n        routes: [\n          GoRoute(\n            path: 'apply',\n            name: 'loan-application',\n            builder: (context, state) => const LoanApplicationPage(),\n          ),\n          GoRoute(\n            path: 'calculator',\n            name: 'loan-calculator',\n            builder: (context, state) => const LoanCalculatorPage(),\n          ),\n        ],\n      ),\n      GoRoute(\n        path: '/loans/:loanId',\n        name: 'loan-detail',\n        builder: (context, state) {\n          final loanId = state.pathParameters['loanId']!;\n          return LoanDetailPage(loanId: loanId);\n        },\n      ),\n      \n      // Transactions\n      GoRoute(\n        path: AppRoutes.transactions,\n        name: 'transactions',\n        builder: (context, state) => const TransactionsPage(),\n      ),\n      GoRoute(\n        path: '/transactions/:transactionId',\n        name: 'transaction-detail',\n        builder: (context, state) {\n          final transactionId = state.pathParameters['transactionId']!;\n          return TransactionDetailPage(transactionId: transactionId);\n        },\n      ),\n      GoRoute(\n        path: AppRoutes.transferMoney,\n        name: 'transfer-money',\n        builder: (context, state) => const TransferMoneyPage(),\n      ),\n      \n      // Profile\n      GoRoute(\n        path: AppRoutes.profile,\n        name: 'profile',\n        builder: (context, state) => const ProfilePage(),\n        routes: [\n          GoRoute(\n            path: 'edit',\n            name: 'edit-profile',\n            builder: (context, state) => const EditProfilePage(),\n          ),\n          GoRoute(\n            path: 'security',\n            name: 'security-settings',\n            builder: (context, state) => const SecuritySettingsPage(),\n          ),\n          GoRoute(\n            path: 'documents',\n            name: 'document-upload',\n            builder: (context, state) => const DocumentUploadPage(),\n          ),\n        ],\n      ),\n      \n      // Other features\n      GoRoute(\n        path: AppRoutes.notifications,\n        name: 'notifications',\n        builder: (context, state) => const NotificationsPage(),\n      ),\n      GoRoute(\n        path: AppRoutes.support,\n        name: 'support',\n        builder: (context, state) => const SupportPage(),\n        routes: [\n          GoRoute(\n            path: 'chat',\n            name: 'chat',\n            builder: (context, state) => const ChatPage(),\n          ),\n        ],\n      ),\n      GoRoute(\n        path: AppRoutes.reports,\n        name: 'reports',\n        builder: (context, state) => const ReportsPage(),\n      ),\n      GoRoute(\n        path: AppRoutes.investments,\n        name: 'investments',\n        builder: (context, state) => const InvestmentsPage(),\n      ),\n      GoRoute(\n        path: AppRoutes.budget,\n        name: 'budget',\n        builder: (context, state) => const BudgetPage(),\n      ),\n    ],\n    errorBuilder: (context, state) => Scaffold(\n      body: Center(\n        child: Column(\n          mainAxisAlignment: MainAxisAlignment.center,\n          children: [\n            const Icon(\n              Icons.error_outline,\n              size: 64,\n              color: Colors.red,\n            ),\n            const SizedBox(height: 16),\n            Text(\n              'Page Not Found',\n              style: Theme.of(context).textTheme.headlineSmall,\n            ),\n            const SizedBox(height: 8),\n            Text(\n              'The page you are looking for does not exist.',\n              style: Theme.of(context).textTheme.bodyMedium,\n            ),\n            const SizedBox(height: 16),\n            ElevatedButton(\n              onPressed: () => context.go(AppRoutes.dashboard),\n              child: const Text('Go to Dashboard'),\n            ),\n          ],\n        ),\n      ),\n    ),\n  );\n}\n\n// Navigation extension methods\nextension AppNavigationExtension on BuildContext {\n  void goToLogin() => go(AppRoutes.login);\n  \n  void goToRegister() => go(AppRoutes.register);\n  \n  void goToDashboard() => go(AppRoutes.dashboard);\n  \n  void goToSavings() => go(AppRoutes.savings);\n  \n  void goToSavingsDetail(String accountId) => \n      go('/savings/$accountId');\n  \n  void goToDeposit() => go(AppRoutes.deposit);\n  \n  void goToWithdraw() => go(AppRoutes.withdraw);\n  \n  void goToLoans() => go(AppRoutes.loans);\n  \n  void goToLoanDetail(String loanId) => \n      go('/loans/$loanId');\n  \n  void goToLoanApplication() => go(AppRoutes.loanApplication);\n  \n  void goToLoanCalculator() => go(AppRoutes.loanCalculator);\n  \n  void goToTransactions() => go(AppRoutes.transactions);\n  \n  void goToTransactionDetail(String transactionId) => \n      go('/transactions/$transactionId');\n  \n  void goToTransferMoney() => go(AppRoutes.transferMoney);\n  \n  void goToProfile() => go(AppRoutes.profile);\n  \n  void goToEditProfile() => go(AppRoutes.editProfile);\n  \n  void goToSecuritySettings() => go(AppRoutes.securitySettings);\n  \n  void goToDocumentUpload() => go(AppRoutes.documentUpload);\n  \n  void goToNotifications() => go(AppRoutes.notifications);\n  \n  void goToSupport() => go(AppRoutes.support);\n  \n  void goToChat() => go(AppRoutes.chat);\n  \n  void goToReports() => go(AppRoutes.reports);\n  \n  void goToInvestments() => go(AppRoutes.investments);\n  \n  void goToBudget() => go(AppRoutes.budget);\n}
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
+// Import existing pages that we know exist
+import '../../features/auth/views/login_screen.dart';
+import '../../features/dashboard/views/dashboard_screen.dart';
+
+// Route names
+class AppRoutes {
+  static const splash = '/';
+  static const login = '/login';
+  static const dashboard = '/dashboard';
+}
+
+final GoRouter appRouter = GoRouter(
+  initialLocation: AppRoutes.login,
+  debugLogDiagnostics: true,
+  routes: [
+    // Authentication
+    GoRoute(
+      path: AppRoutes.login,
+      name: 'login',
+      builder: (context, state) => const LoginScreen(),
+    ),
+    
+    // Dashboard
+    GoRoute(
+      path: AppRoutes.dashboard,
+      name: 'dashboard',
+      builder: (context, state) => const DashboardScreen(),
+    ),
+  ],
+  errorBuilder: (context, state) => Scaffold(
+    body: Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(
+            Icons.error_outline,
+            size: 64,
+            color: Colors.red,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Page Not Found',
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'The page you are looking for does not exist.',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () => context.go(AppRoutes.dashboard),
+            child: const Text('Go to Dashboard'),
+          ),
+        ],
+      ),
+    ),
+  ),
+);
+
+// Navigation extension methods
+extension AppNavigationExtension on BuildContext {
+  void goToLogin() => go(AppRoutes.login);
+  void goToDashboard() => go(AppRoutes.dashboard);
+}
