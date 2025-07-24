@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:sacco_mobile/app/app_constants.dart';
 import 'package:sacco_mobile/core/di/service_locator.dart';
-import 'package:sacco_mobile/core/services/secure_storage_service.dart';
+import 'package:sacco_mobile/core/storage/secure_storage_service.dart';
 
 class AuthInterceptor extends Interceptor {
   final SecureStorageService _secureStorage = getIt<SecureStorageService>();
@@ -17,7 +17,7 @@ class AuthInterceptor extends Interceptor {
       return handler.next(options);
     }
     
-    final token = await _secureStorage.getToken(key: AppConstants.accessTokenKey);
+    final token = await _secureStorage.read(AppConstants.accessTokenKey);
     
     if (token != null && token.isNotEmpty) {
       options.headers['Authorization'] = 'Bearer $token';
@@ -35,9 +35,7 @@ class AuthInterceptor extends Interceptor {
     if (err.response?.statusCode == 401) {
       try {
         // Get refresh token
-        final refreshToken = await _secureStorage.getToken(
-          key: AppConstants.refreshTokenKey,
-        );
+        final refreshToken = await _secureStorage.read(AppConstants.refreshTokenKey);
         
         if (refreshToken == null || refreshToken.isEmpty) {
           // No refresh token available, proceed with error
@@ -56,14 +54,14 @@ class AuthInterceptor extends Interceptor {
         
         if (response.statusCode == 200 && response.data['tokens'] != null) {
           // Store the new tokens
-          await _secureStorage.saveToken(
-            key: AppConstants.accessTokenKey,
-            value: response.data['tokens']['access_token'],
+          await _secureStorage.write(
+            AppConstants.accessTokenKey,
+            response.data['tokens']['access_token'],
           );
           
-          await _secureStorage.saveToken(
-            key: AppConstants.refreshTokenKey,
-            value: response.data['tokens']['refresh_token'],
+          await _secureStorage.write(
+            AppConstants.refreshTokenKey,
+            response.data['tokens']['refresh_token'],
           );
           
           // Retry the original request with the new token
@@ -78,7 +76,7 @@ class AuthInterceptor extends Interceptor {
         }
       } catch (e) {
         // If token refresh fails, log the user out
-        await _secureStorage.deleteAllTokens();
+        await _secureStorage.deleteAll();
         // Continue with the original error
         return handler.next(err);
       }
