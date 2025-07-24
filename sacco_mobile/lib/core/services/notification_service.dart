@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 import '../storage/secure_storage_service.dart';
 import '../errors/app_error.dart';
@@ -117,7 +116,6 @@ class NotificationService {
   final SecureStorageService _secureStorage;
 
   static const String _notificationTokenKey = 'fcm_token';
-  static const String _notificationSettingsKey = 'notification_settings';
   static const String _notificationHistoryKey = 'notification_history';
 
   bool _isInitialized = false;
@@ -143,7 +141,7 @@ class NotificationService {
     } catch (e) {
       throw AppError(
         message: 'Failed to initialize notification service: ${e.toString()}',
-        userFriendlyMessage: 'Failed to set up notifications',
+        originalError: e.toString(),
       );
     }
   }
@@ -181,18 +179,39 @@ class NotificationService {
     // Request permission for notifications
     await _requestNotificationPermissions();
 
-    // Get FCM token
-    final token = await _firebaseMessaging.getToken();
-    if (token != null) {
-      await _secureStorage.write(_notificationTokenKey, token);
-      debugPrint('FCM Token: $token');
+    // Get FCM token (with graceful handling for development mode)
+    try {
+      final token = await _firebaseMessaging.getToken();
+      if (token != null) {
+        await _secureStorage.write(_notificationTokenKey, token);
+        debugPrint('FCM Token: $token');
+      } else {
+        debugPrint('FCM Token is null - this is normal in development mode');
+      }
+    } catch (e) {
+      // In development mode, APNS token might not be available
+      if (e.toString().contains('apns-token-not-set')) {
+        debugPrint('APNS token not available in development mode - skipping FCM token retrieval');
+      } else {
+        debugPrint('Error getting FCM token: $e');
+        // Don't rethrow in development - just log the error
+      }
     }
 
-    // Listen for token refresh
-    _firebaseMessaging.onTokenRefresh.listen((newToken) async {
-      await _secureStorage.write(_notificationTokenKey, newToken);
-      debugPrint('FCM Token refreshed: $newToken');
-    });
+    // Listen for token refresh (with error handling)
+    _firebaseMessaging.onTokenRefresh.listen(
+      (newToken) async {
+        try {
+          await _secureStorage.write(_notificationTokenKey, newToken);
+          debugPrint('FCM Token refreshed: $newToken');
+        } catch (e) {
+          debugPrint('Error saving refreshed FCM token: $e');
+        }
+      },
+      onError: (error) {
+        debugPrint('Error in token refresh stream: $error');
+      },
+    );
 
     // Handle foreground messages
     FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
@@ -342,7 +361,7 @@ class NotificationService {
     } catch (e) {
       throw AppError(
         message: 'Failed to subscribe to topic: ${e.toString()}',
-        userFriendlyMessage: 'Failed to subscribe to notifications',
+        originalError: e.toString(),
       );
     }
   }
@@ -355,7 +374,7 @@ class NotificationService {
     } catch (e) {
       throw AppError(
         message: 'Failed to unsubscribe from topic: ${e.toString()}',
-        userFriendlyMessage: 'Failed to unsubscribe from notifications',
+        originalError: e.toString(),
       );
     }
   }
@@ -480,7 +499,6 @@ class NotificationService {
       case NotificationType.reminder:
         return 'reminders';
       case NotificationType.system:
-      default:
         return 'system';
     }
   }
@@ -500,7 +518,6 @@ class NotificationService {
       case NotificationType.reminder:
         return 'Reminders';
       case NotificationType.system:
-      default:
         return 'System';
     }
   }
@@ -520,7 +537,6 @@ class NotificationService {
       case NotificationType.reminder:
         return 'Payment reminders and important dates';
       case NotificationType.system:
-      default:
         return 'System notifications and updates';
     }
   }
