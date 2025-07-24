@@ -121,13 +121,12 @@ class LoanApplicationViewModel extends ChangeNotifier {
   Future<LoanApplication?> getLoanApplicationById(int applicationId) async {
     try {
       // First check if application is already in the list
-      final existingApplication = _loanApplications.firstWhere(
+      final existingApplicationIndex = _loanApplications.indexWhere(
         (app) => app.id == applicationId,
-        orElse: () => null as LoanApplication,
       );
 
-      if (existingApplication != null) {
-        return existingApplication;
+      if (existingApplicationIndex != -1) {
+        return _loanApplications[existingApplicationIndex];
       }
 
       // If not found, fetch from API
