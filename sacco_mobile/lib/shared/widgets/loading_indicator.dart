@@ -16,7 +16,7 @@ class LoadingIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _color = color ?? Theme.of(context).primaryColor;
+    final color = color ?? Theme.of(context).primaryColor;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -27,7 +27,7 @@ class LoadingIndicator extends StatelessWidget {
           height: size,
           child: CircularProgressIndicator(
             strokeWidth: strokeWidth,
-            valueColor: AlwaysStoppedAnimation<Color>(_color),
+            valueColor: AlwaysStoppedAnimation<Color>(color),
           ),
         ),
         if (message != null) ...[
