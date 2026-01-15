@@ -10,7 +10,7 @@ import 'package:sacco_mobile/shared/widgets/app_text_field.dart';
 import 'package:sacco_mobile/shared/widgets/loading_indicator.dart';
 
 class DepositScreen extends StatefulWidget {
-  const DepositScreen({Key? key}) : super(key: key);
+  const DepositScreen({super.key});
 
   @override
   State<DepositScreen> createState() => _DepositScreenState();
@@ -144,7 +144,7 @@ class _DepositScreenState extends State<DepositScreen> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: DropdownButtonFormField<String>(
-                    value: _selectedPaymentMethod,
+                    initialValue: _selectedPaymentMethod,
                     isExpanded: true,
                     decoration: const InputDecoration(
                       border: InputBorder.none,

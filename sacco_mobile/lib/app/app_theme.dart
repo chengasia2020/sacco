@@ -54,7 +54,7 @@ class AppTheme {
       tertiary: accentColor,
     ),
     appBarTheme: const AppBarTheme(
-      color: primaryColor,
+      backgroundColor: primaryColor,
       titleTextStyle: TextStyle(
         color: textPrimaryLight,
         fontSize: 18,
@@ -238,10 +238,9 @@ class AppTheme {
       error: errorColor,
       tertiary: accentColor,
       surface: cardBackgroundDark,
-      background: backgroundDark,
     ),
     appBarTheme: const AppBarTheme(
-      color: Color(0xFF0A1929),
+      backgroundColor: Color(0xFF0A1929),
       titleTextStyle: TextStyle(
         color: textPrimaryLight,
         fontSize: 18,

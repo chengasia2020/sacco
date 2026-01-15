@@ -5,7 +5,7 @@ import '../models/budget_models.dart';
 import '../providers/budget_providers.dart';
 
 class BudgetScreen extends ConsumerStatefulWidget {
-  const BudgetScreen({Key? key}) : super(key: key);
+  const BudgetScreen({super.key});
 
   @override
   ConsumerState<BudgetScreen> createState() => _BudgetScreenState();

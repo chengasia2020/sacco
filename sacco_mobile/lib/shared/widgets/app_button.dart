@@ -22,7 +22,7 @@ class AppButton extends StatelessWidget {
   final Color? textColor;
 
   const AppButton({
-    Key? key,
+    super.key,
     required this.text,
     required this.onPressed,
     this.buttonType = ButtonType.primary,
@@ -33,7 +33,7 @@ class AppButton extends StatelessWidget {
     this.borderRadius = 8.0,
     this.backgroundColor,
     this.textColor,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

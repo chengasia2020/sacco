@@ -5,7 +5,7 @@ import '../models/investment_models.dart';
 import '../providers/investment_providers.dart';
 
 class InvestmentScreen extends ConsumerStatefulWidget {
-  const InvestmentScreen({Key? key}) : super(key: key);
+  const InvestmentScreen({super.key});
 
   @override
   ConsumerState<InvestmentScreen> createState() => _InvestmentScreenState();
@@ -356,7 +356,7 @@ class _InvestmentScreenState extends ConsumerState<InvestmentScreen>
                   ],
                 ),
               );
-            }).toList(),
+            }),
           ],
         ),
       ),
@@ -417,7 +417,7 @@ class _InvestmentScreenState extends ConsumerState<InvestmentScreen>
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   onTap: () => _showInvestmentDetails(investment),
-                )).toList(),
+                )),
           ],
         ),
       ),
@@ -584,7 +584,7 @@ class _InvestmentScreenState extends ConsumerState<InvestmentScreen>
                               color: _getColorForTransactionType(transaction.type),
                             ),
                           ),
-                        )).toList(),
+                        )),
                   ],
                 ),
               ),

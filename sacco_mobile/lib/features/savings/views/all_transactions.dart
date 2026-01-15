@@ -14,9 +14,9 @@ class AllTransactionsScreen extends StatefulWidget {
   final int? accountId;
 
   const AllTransactionsScreen({
-    Key? key,
+    super.key,
     this.accountId,
-  }) : super(key: key);
+  });
 
   @override
   State<AllTransactionsScreen> createState() => _AllTransactionsScreenState();

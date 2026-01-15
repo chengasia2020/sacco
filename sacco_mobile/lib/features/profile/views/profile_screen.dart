@@ -13,7 +13,7 @@ import 'package:sacco_mobile/shared/widgets/error_widget.dart';
 import 'package:sacco_mobile/shared/widgets/loading_indicator.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({Key? key}) : super(key: key);
+  const ProfileScreen({super.key});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();

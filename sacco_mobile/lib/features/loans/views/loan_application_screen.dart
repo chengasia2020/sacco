@@ -10,7 +10,7 @@ import 'package:sacco_mobile/shared/widgets/app_text_field.dart';
 import 'package:sacco_mobile/shared/widgets/loading_indicator.dart';
 
 class LoanApplicationScreen extends StatefulWidget {
-  const LoanApplicationScreen({Key? key}) : super(key: key);
+  const LoanApplicationScreen({super.key});
 
   @override
   State<LoanApplicationScreen> createState() => _LoanApplicationScreenState();
@@ -198,7 +198,7 @@ class _LoanApplicationScreenState extends State<LoanApplicationScreen> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: DropdownButtonFormField<String>(
-                  value: _selectedLoanType,
+                  initialValue: _selectedLoanType,
                   isExpanded: true,
                   decoration: const InputDecoration(
                     border: InputBorder.none,

@@ -5,7 +5,7 @@ import '../models/report_models.dart';
 import '../providers/report_providers.dart';
 
 class ReportsScreen extends ConsumerStatefulWidget {
-  const ReportsScreen({Key? key}) : super(key: key);
+  const ReportsScreen({super.key});
 
   @override
   ConsumerState<ReportsScreen> createState() => _ReportsScreenState();
@@ -575,7 +575,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen>
 
 // Report Generation Form Widget
 class ReportGenerationForm extends ConsumerStatefulWidget {
-  const ReportGenerationForm({Key? key}) : super(key: key);
+  const ReportGenerationForm({super.key});
 
   @override
   ConsumerState<ReportGenerationForm> createState() => _ReportGenerationFormState();
@@ -703,7 +703,7 @@ class _ReportGenerationFormState extends ConsumerState<ReportGenerationForm> {
 class ReportDetailsSheet extends StatelessWidget {
   final Report report;
 
-  const ReportDetailsSheet({Key? key, required this.report}) : super(key: key);
+  const ReportDetailsSheet({super.key, required this.report});
 
   @override
   Widget build(BuildContext context) {

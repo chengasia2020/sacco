@@ -154,7 +154,7 @@ class RouterRefreshNotifier extends ChangeNotifier {
 
 // Placeholder screens (to be implemented in Phase 2)
 class ForgotPasswordScreen extends StatelessWidget {
-  const ForgotPasswordScreen({Key? key}) : super(key: key);
+  const ForgotPasswordScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -168,7 +168,7 @@ class ForgotPasswordScreen extends StatelessWidget {
 }
 
 class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({Key? key}) : super(key: key);
+  const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -182,7 +182,7 @@ class ProfileScreen extends StatelessWidget {
 }
 
 class LoansScreen extends StatelessWidget {
-  const LoansScreen({Key? key}) : super(key: key);
+  const LoansScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -196,7 +196,7 @@ class LoansScreen extends StatelessWidget {
 }
 
 class SavingsScreen extends StatelessWidget {
-  const SavingsScreen({Key? key}) : super(key: key);
+  const SavingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -210,7 +210,7 @@ class SavingsScreen extends StatelessWidget {
 }
 
 class TransactionsScreen extends StatelessWidget {
-  const TransactionsScreen({Key? key}) : super(key: key);
+  const TransactionsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -14,9 +14,9 @@ class LoanRepaymentScreen extends StatefulWidget {
   final Loan loan;
 
   const LoanRepaymentScreen({
-    Key? key,
+    super.key,
     required this.loan,
-  }) : super(key: key);
+  });
 
   @override
   State<LoanRepaymentScreen> createState() => _LoanRepaymentScreenState();
@@ -197,7 +197,7 @@ class _LoanRepaymentScreenState extends State<LoanRepaymentScreen> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: DropdownButtonFormField<String>(
-                    value: _selectedPaymentMethod,
+                    initialValue: _selectedPaymentMethod,
                     isExpanded: true,
                     decoration: const InputDecoration(
                       border: InputBorder.none,

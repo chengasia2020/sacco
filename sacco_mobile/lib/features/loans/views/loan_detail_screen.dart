@@ -14,9 +14,9 @@ class LoanDetailScreen extends StatefulWidget {
   final int loanId;
 
   const LoanDetailScreen({
-    Key? key,
+    super.key,
     required this.loanId,
-  }) : super(key: key);
+  });
 
   @override
   State<LoanDetailScreen> createState() => _LoanDetailScreenState();

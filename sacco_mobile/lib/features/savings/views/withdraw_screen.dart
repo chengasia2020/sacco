@@ -155,7 +155,7 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: DropdownButtonFormField<String>(
-                    value: _selectedPaymentMethod,
+                    initialValue: _selectedPaymentMethod,
                     isExpanded: true,
                     decoration: const InputDecoration(
                       border: InputBorder.none,

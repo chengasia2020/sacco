@@ -26,7 +26,7 @@ class AppTextField extends StatelessWidget {
   final EdgeInsetsGeometry? contentPadding;
 
   const AppTextField({
-    Key? key,
+    super.key,
     required this.controller,
     required this.labelText,
     this.hintText,
@@ -49,7 +49,7 @@ class AppTextField extends StatelessWidget {
     this.readOnly = false,
     this.textCapitalization = TextCapitalization.none,
     this.contentPadding,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
